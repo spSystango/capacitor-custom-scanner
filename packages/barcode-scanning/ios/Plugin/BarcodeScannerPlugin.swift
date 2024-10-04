@@ -233,10 +233,19 @@ public class BarcodeScannerPlugin: CAPPlugin {
             self.checkPermissions(call)
         }
     }
-
-    func notifyBarcodeScannedListener(barcode: Barcode, imageSize: CGSize, videoOrientation: AVCaptureVideoOrientation?) {
+    
+    // Modified SDK: Added scannedImage and qrImage in response
+    func notifyBarcodeScannedListener(barcode: Barcode, imageSize: CGSize, videoOrientation: AVCaptureVideoOrientation?, scannedImage: String, qrImage: String) {
         var result = JSObject()
+
+        let scannedImage = scannedImage != "" ? "data:image/jpeg;base64," + scannedImage : ""
+        let qrImage = qrImage != "" ? "data:image/jpeg;base64," + qrImage : ""
+
         result["barcode"] = BarcodeScannerHelper.createBarcodeResultForBarcode(barcode, imageSize: imageSize, videoOrientation: videoOrientation)
+        
+        result["scannedImage"] = scannedImage
+        result["qrImage"] = qrImage
+
         notifyListeners(barcodeScannedEvent, data: result)
     }
 }

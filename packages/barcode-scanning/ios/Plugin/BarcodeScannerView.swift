@@ -10,7 +10,7 @@ import MLKitVision
 
 // swiftlint:disable class_delegate_protocol
 public protocol BarcodeScannerViewDelegate {
-    func onBarcodesDetected(barcodes: [Barcode], imageSize: CGSize, videoOrientation: AVCaptureVideoOrientation?)
+    func onBarcodesDetected(barcodes: [Barcode], imageSize: CGSize, videoOrientation: AVCaptureVideoOrientation?, sampleBuffer: CMSampleBuffer) // Modified SDK: added sampleBuffer
     func onCancel()
     func onTorchToggle()
 }
@@ -145,7 +145,7 @@ public protocol BarcodeScannerViewDelegate {
                 return
             }
         }
-        onBarcodesDetected(barcodes: barcodes, imageSize: imageSize, videoOrientation: videoOrientation)
+        onBarcodesDetected(barcodes: barcodes, imageSize: imageSize, videoOrientation: videoOrientation, sampleBuffer: sampleBuffer)  // Modified SDK: added sampleBuffer
     }
 
     private func interfaceOrientationToVideoOrientation(_ orientation: UIInterfaceOrientation) -> AVCaptureVideoOrientation {
@@ -291,8 +291,9 @@ public protocol BarcodeScannerViewDelegate {
         }
     }
 
-    private func onBarcodesDetected(barcodes: [Barcode], imageSize: CGSize, videoOrientation: AVCaptureVideoOrientation?) {
-        self.delegate?.onBarcodesDetected(barcodes: barcodes, imageSize: imageSize, videoOrientation: videoOrientation)
+     // Modified SDK: added sampleBuffer
+    private func onBarcodesDetected(barcodes: [Barcode], imageSize: CGSize, videoOrientation: AVCaptureVideoOrientation?, sampleBuffer: CMSampleBuffer) {
+        self.delegate?.onBarcodesDetected(barcodes: barcodes, imageSize: imageSize, videoOrientation: videoOrientation, sampleBuffer: sampleBuffer)
     }
 
     @objc private func onCancel() {

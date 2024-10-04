@@ -347,7 +347,12 @@ public class BarcodeScanner implements ImageAnalysis.Analyzer {
                         return;
                     }
                     for (Barcode barcode : barcodes) {
-                        handleScannedBarcode(barcode, imageSize);
+                        // Modified SDK: Hold the processed image and crop the QR area
+                        Rect qrBoundingBox  = barcode.getBoundingBox();
+                        String scannedImage = ""; // Full scanned image, can process directly 
+                        String cropedQrImage = getQrImage(image, qrBoundingBox);
+                        
+                        handleScannedBarcode(barcode, imageSize, scannedImage, cropedQrImage);
                     }
                 }
             )
@@ -363,6 +368,92 @@ public class BarcodeScanner implements ImageAnalysis.Analyzer {
                 }
             );
     }
+
+    // Modified SDK: Process the Yuv image and return it to base64 String
+    public String getQrImage(Image image, Rect qrBoundingBox){
+        String base64String = null;
+        if(image.getFormat() == ImageFormat.YUV_420_888){
+            base64String = convertYuvToBase64(image, qrBoundingBox);
+        }else{
+            base64String = "";
+            image.close();
+        }
+        return base64String;
+    }
+
+    // Modified SDK: Convert YUV_420_888 to YUV image then crop and then convert it to the base64  
+    private String convertYuvToBase64(Image image, Rect qrBoundingBox) {
+        YuvImage yuvImage = imageToYuvImage(image);
+        if (yuvImage == null) {
+            Log.e("ImageConverter", "Failed to convert YUV to JPEG.");
+            return "";
+        }
+
+        // Convert YUV image to JPEG format and then encode it
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        yuvImage.compressToJpeg(new android.graphics.Rect(0, 0, image.getWidth(), image.getHeight()), 100, outputStream);
+        byte[] jpegBytes = outputStream.toByteArray();
+
+        byte[] rotatedByte = rotateAndCropQRImage(jpegBytes, 90, qrBoundingBox);
+
+        // Convert to Base64
+        return Base64.encodeToString(rotatedByte, Base64.NO_WRAP);
+    }
+
+    // Modified SDK: Method to convert Image (YUV_420_888) to YuvImage
+    private YuvImage imageToYuvImage(Image image) {
+        ByteBuffer yBuffer = image.getPlanes()[0].getBuffer();  // Y
+        ByteBuffer uBuffer = image.getPlanes()[1].getBuffer();  // U
+        ByteBuffer vBuffer = image.getPlanes()[2].getBuffer();  // V
+
+        int ySize = yBuffer.remaining();
+        int uSize = uBuffer.remaining();
+        int vSize = vBuffer.remaining();
+
+        byte[] nv21 = new byte[ySize + uSize + vSize];
+
+        // U and V are swapped
+        yBuffer.get(nv21, 0, ySize);
+        vBuffer.get(nv21, ySize, vSize);
+        uBuffer.get(nv21, ySize + vSize, uSize);
+
+        // Convert YUV_420_888 to YuvImage (compatible with JPEG compression)
+        return new YuvImage(nv21, ImageFormat.NV21, image.getWidth(), image.getHeight(), null);
+    }
+
+    // Modified SDK: Rotate and crop the QR code image
+    public static byte[] rotateAndCropQRImage(byte[] jpegBytes, float rotationAngle, Rect qrBoundingBox) {
+        // Step 1: Convert byte[] (JPEG) to Bitmap
+        Bitmap bitmap = BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.length);
+
+        // Step 2: Rotate the Bitmap
+        Bitmap rotatedBitmap = rotateImage(bitmap, rotationAngle);
+
+        // Step 3: Crop the QR code using bounding box
+        // Ensure the bounding box coordinates are within the rotated bitmap's dimensions
+        int cropX = Math.max(0, qrBoundingBox.left);
+        int cropY = Math.max(0, qrBoundingBox.top);
+        int cropWidth = Math.min(rotatedBitmap.getWidth() - cropX, qrBoundingBox.width());
+        int cropHeight = Math.min(rotatedBitmap.getHeight() - cropY, qrBoundingBox.height());
+
+        // Crop the QR code from the rotated bitmap
+        Bitmap croppedBitmap = Bitmap.createBitmap(rotatedBitmap, cropX, cropY, cropWidth, cropHeight);
+
+
+        // Step 4: Convert the rotated Bitmap back to byte[] (JPEG)
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+        return outputStream.toByteArray();
+    }
+
+    // Modified SDK: Rotate the Bitmap image to 90 Degree
+    private static Bitmap rotateImage(Bitmap source, float angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+    }
+
+    // Custom Method END
 
     public void handleGoogleBarcodeScannerModuleInstallProgress(
         @ModuleInstallStatusUpdate.InstallState int state,
@@ -399,8 +490,8 @@ public class BarcodeScanner implements ImageAnalysis.Analyzer {
         plugin.getBridge().getWebView().setBackgroundColor(Color.WHITE);
     }
 
-    private void handleScannedBarcode(Barcode barcode, Point imageSize) {
-        plugin.notifyBarcodeScannedListener(barcode, imageSize);
+    private void handleScannedBarcode(Barcode barcode, Point imageSize, String scannedImage, String qrImage) {
+        plugin.notifyBarcodeScannedListener(barcode, imageSize, scannedImage, qrImage);
     }
 
     private void handleScanError(Exception exception) {
