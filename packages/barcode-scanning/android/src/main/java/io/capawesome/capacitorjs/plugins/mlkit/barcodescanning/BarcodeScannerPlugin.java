@@ -464,13 +464,20 @@ public class BarcodeScannerPlugin extends Plugin {
         }
     }
 
-    public void notifyBarcodeScannedListener(Barcode barcode, Point imageSize) {
+    // Modified SDK: Added scannedImage and qrImage in response
+    public void notifyBarcodeScannedListener(Barcode barcode, Point imageSize, String scannedImage, String qrImage) {
         try {
             Point screenSize = this.getScreenSize();
             JSObject barcodeResult = BarcodeScannerHelper.createBarcodeResultForBarcode(barcode, imageSize, screenSize);
+            
+            scannedImage = scannedImage !="" ? "data:image/jpeg;base64," + scannedImage:"";
+            qrImage = qrImage !="" ? "data:image/jpeg;base64," + qrImage:"";
 
             JSObject result = new JSObject();
             result.put("barcode", barcodeResult);
+             result.put("scannedImage", scannedImage);
+            result.put("qrImage", qrImage);
+
             notifyListeners(BARCODE_SCANNED_EVENT, result);
         } catch (Exception exception) {
             Logger.error(TAG, exception.getMessage(), exception);

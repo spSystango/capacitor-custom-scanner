@@ -254,22 +254,80 @@ typealias MLKitBarcodeScanner = MLKitBarcodeScanning.BarcodeScanner
         webView.scrollView.backgroundColor = UIColor.white
     }
 
-    private func handleScannedBarcode(barcode: Barcode, imageSize: CGSize, videoOrientation: AVCaptureVideoOrientation?) {
-        plugin.notifyBarcodeScannedListener(barcode: barcode, imageSize: imageSize, videoOrientation: videoOrientation)
+    private func handleScannedBarcode(barcode: Barcode, imageSize: CGSize, videoOrientation: AVCaptureVideoOrientation?, scannedImage: String, qrImage: String) {
+        plugin.notifyBarcodeScannedListener(barcode: barcode, imageSize: imageSize, videoOrientation: videoOrientation, scannedImage: scannedImage, qrImage: qrImage)
     }
 }
 
 extension BarcodeScanner: BarcodeScannerViewDelegate {
-    public func onBarcodesDetected(barcodes: [Barcode], imageSize: CGSize, videoOrientation: AVCaptureVideoOrientation?) {
+    public func onBarcodesDetected(barcodes: [Barcode], imageSize: CGSize, videoOrientation: AVCaptureVideoOrientation?, sampleBuffer: CMSampleBuffer) {
         if let scanCompletionHandler = self.scanCompletionHandler {
             scanCompletionHandler(barcodes, videoOrientation, nil)
             self.stopScan()
         } else {
             for barcode in barcodes {
-                self.handleScannedBarcode(barcode: barcode, imageSize: imageSize, videoOrientation: videoOrientation)
+                // Modified SDK: Hold the processed video frame and capture and then crop the QR area
+                let qrBoundingBox = barcode.frame
+                let scannedImage = "" 
+                let cropedQrImage = self.convertImageToBase64(image: getCapturedImage(imageBuffer: sampleBuffer), qrBoundingBox: qrBoundingBox)
+
+                self.handleScannedBarcode(barcode: barcode, imageSize: imageSize, videoOrientation: videoOrientation, scannedImage: scannedImage ?? "", qrImage: cropedQrImage ?? "")
             }
         }
     }
+
+    // Custom Method START
+    // Modified SDK: capture the image from the image buffer(video frame) and return as image
+    private func getCapturedImage(imageBuffer: CMSampleBuffer) -> UIImage {
+        guard let imageBuffer = CMSampleBufferGetImageBuffer(imageBuffer) else {
+            CAPLog.print("imageBuffer is nil")
+            return UIImage()
+        }
+        let ciImage = CIImage(cvImageBuffer: imageBuffer)
+        let ciContext = CIContext()
+        guard let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) else {
+            return UIImage()
+        }
+
+        return UIImage(cgImage: cgImage)
+    }
+
+    // Modified SDK: Process the image and then convert it to the base64 String
+    private func convertImageToBase64(image: UIImage, qrBoundingBox: CGRect) -> String? {
+        let croppedImage = cropImage(image, toRect: qrBoundingBox)
+        guard let imageData = croppedImage?.jpegData(compressionQuality: 1.0) else { return nil }
+        return imageData.base64EncodedString(options: .lineLength64Characters)
+    }
+
+    // Modified SDK: Crop the QR area from the image by bounding box
+    private func cropImage(_ image: UIImage, toRect rect: CGRect) -> UIImage? {
+        guard let cgImage = image.cgImage?.cropping(to: rect) else {
+            return nil
+        }
+        return rotateImage(UIImage(cgImage: cgImage))
+    }
+
+    // Modified SDK: Rotate the image to 90 Degree to show as original position
+    private func rotateImage(_ image: UIImage) -> UIImage? {
+        let size = image.size
+        UIGraphicsBeginImageContextWithOptions(size, false, image.scale)
+        guard let context = UIGraphicsGetCurrentContext() else {
+            return nil
+        }
+
+        context.translateBy(x: size.height / 2, y: size.width / 2)
+        context.rotate(by: .pi / 2)
+        context.translateBy(x: -size.width / 2, y: -size.height / 2)
+
+        image.draw(in: CGRect(origin: .zero, size: size))
+
+        let rotatedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        return rotatedImage
+    }
+
+    // Custom Method END
 
     public func onCancel() {
         if let scanCompletionHandler = self.scanCompletionHandler {
