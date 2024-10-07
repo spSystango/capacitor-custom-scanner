@@ -15,32 +15,27 @@
 
 
 ## Custom Scanner Setup
-I have made some changes in this SDK for capture scanned QR image also, So here is the process for using this:
+I have made modifications to this SDK to enable capturing the scanned QR image. To integrate these changes, follow the steps below:
+1. **Install the SDK:**
+  Run `npm install` in your project. This will install the package in `node_modules/@capacitor-mlkit`.
 
-- Run npm install in your project it will clone this repo in node_modules/@capacitor-mlkit 
-- Go to /packages dir and keep only /barcode-scanning dir (Remove all dir expect barcode-scanning)
-- Go to /barcode-scanning and now remove all files and dir expect below
-   - android
-   - ios
-   - dist
-   - CapacitorMlkitBarcodeScanning.podspec
-   - LICENSE
-   - package.json
-   - README.md
+2. **Clean Up Unnecessary Directories:**
+  Navigate to the `/packages` directory and retain only the `/barcode-scanning` folder. Remove all other directories.
+  
+3. **Prepare the `barcode-scanning` Directory:**
+  Inside `/barcode-scanning`, delete all files and directories except the following:
+   - `android`
+   - `ios`
+   - `dist`
+   - `CapacitorMlkitBarcodeScanning.podspec`
+   - `LICENSE`
+   - `package.json`
+   - `README.md`
 
-  Now you are good to use this make sure the your updated pakcage structure will be:
-  - node_modules
-    - @capacitor-mlkit
-      - barcode-scanning
-        - android
-        - ios
-        - dist
-        - CapacitorMlkitBarcodeScanning.podspec
-        - LICENSE
-        - package.json
-        - README.md
-    ...
-    
+4. **Final Package Structure:**
+   Ensure that the updated package structure in `node_modules` looks like this:
+   node_modules └── @capacitor-mlkit └── barcode-scanning ├── android ├── ios ├── dist ├── CapacitorMlkitBarcodeScanning.podspec ├── LICENSE ├── package.json └── README.md
+   
 ## Features
 
 Capacitor ML Kit is a collection of Capacitor plugins that enable the use of the [ML Kit SDKs](https://developers.google.com/ml-kit) in Capacitor.[^1]
