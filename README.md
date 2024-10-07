@@ -13,6 +13,39 @@
   <!-- <a href="https://devlibrary.withgoogle.com/products/mlkit/repos/robingenz-capacitor-mlkit"><img src="https://img.shields.io/badge/part%20of-DevLibrary-9cf?color=4285F4&logoColor=4285F4&logo=google&style=flat-square" /></a> -->
 </p>
 
+
+## Custom Scanner Setup
+I have made modifications to this SDK to enable capturing the scanned QR image. To integrate these changes, follow the steps below:
+1. **Install the SDK:**
+  Run `npm install` in your project. This will install the package in `node_modules/@capacitor-mlkit`.
+
+2. **Clean Up Unnecessary Directories:**
+  Navigate to the `/packages` directory and retain only the `/barcode-scanning` folder. Remove all other directories.
+  
+3. **Prepare the `barcode-scanning` Directory:**
+  Inside `/barcode-scanning`, delete all files and directories except the following:
+   - `android`
+   - `ios`
+   - `dist`
+   - `CapacitorMlkitBarcodeScanning.podspec`
+   - `LICENSE`
+   - `package.json`
+   - `README.md`
+
+4. **Final Package Structure:**
+   Ensure that the updated package structure in `node_modules` looks like this:
+   node_modules</br>
+   &nbsp;└── @capacitor-mlkit</br>
+   &nbsp;&nbsp;└── barcode-scanning</br>
+   &nbsp;&nbsp;&nbsp;├── android</br>
+   &nbsp;&nbsp;&nbsp;├── ios</br>
+   &nbsp;&nbsp;&nbsp;├── dist</br>
+   &nbsp;&nbsp;&nbsp;├── CapacitorMlkitBarcodeScanning.podspec</br>
+   &nbsp;&nbsp;&nbsp;├── LICENSE</br>
+   &nbsp;&nbsp;&nbsp;├── package.json</br>
+   &nbsp;&nbsp;&nbsp;└── README.md</br>
+  ...
+   
 ## Features
 
 Capacitor ML Kit is a collection of Capacitor plugins that enable the use of the [ML Kit SDKs](https://developers.google.com/ml-kit) in Capacitor.[^1]
