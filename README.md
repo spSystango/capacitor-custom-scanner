@@ -34,7 +34,17 @@ I have made modifications to this SDK to enable capturing the scanned QR image. 
 
 4. **Final Package Structure:**
    Ensure that the updated package structure in `node_modules` looks like this:
-   node_modules └── @capacitor-mlkit └── barcode-scanning ├── android ├── ios ├── dist ├── CapacitorMlkitBarcodeScanning.podspec ├── LICENSE ├── package.json └── README.md
+   node_modules</br>
+   &nbsp;└── @capacitor-mlkit</br>
+   &nbsp;&nbsp;└── barcode-scanning</br>
+   &nbsp;&nbsp;;&nbsp;├── android</br>
+   &nbsp;&nbsp;;&nbsp;├── ios</br>
+   &nbsp;&nbsp;;&nbsp;├── dist</br>
+   &nbsp;&nbsp;;&nbsp;├── CapacitorMlkitBarcodeScanning.podspec</br>
+   &nbsp;&nbsp;;&nbsp;├── LICENSE</br>
+   &nbsp;&nbsp;;&nbsp;├── package.json</br>
+   &nbsp;&nbsp;;&nbsp;└── README.md</br>
+  ...
    
 ## Features
 
