@@ -45,6 +45,18 @@ import io.capawesome.capacitorjs.plugins.mlkit.barcodescanning.classes.results.G
 import io.capawesome.capacitorjs.plugins.mlkit.barcodescanning.classes.results.GetMinZoomRatioResult;
 import io.capawesome.capacitorjs.plugins.mlkit.barcodescanning.classes.results.GetZoomRatioResult;
 
+// Modified SDK: Import for custom changes
+import android.graphics.ImageFormat;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import java.nio.ByteBuffer;
+import java.io.ByteArrayOutputStream;
+import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
+import android.util.Base64;
+import android.util.Log;
+
 public class BarcodeScanner implements ImageAnalysis.Analyzer {
 
     @NonNull

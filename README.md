@@ -20,7 +20,7 @@ I have made modifications to this SDK to enable capturing the scanned QR image. 
   Run `npm install` in your project. This will install the package in `node_modules/@capacitor-mlkit`.
 
 2. **Clean Up Unnecessary Directories:**
-  Navigate to the `/packages` directory and retain only the `/barcode-scanning` folder. Remove all other directories.
+  Navigate to the `/barcode-scanning/packages` directory and retain only the `/barcode-scanning` folder. Remove all other directories and move it to the root level.
   
 3. **Prepare the `barcode-scanning` Directory:**
   Inside `/barcode-scanning`, delete all files and directories except the following:
